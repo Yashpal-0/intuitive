@@ -1,0 +1,25 @@
+{
+  "name": "intuitive",
+  "displayName": "Intuitive",
+  "version": "1.0.0",
+  "description": "Makes Claude always think, behave and respond intuitively: it reads for intent, does the obvious thing without needless questions, and answers so it clicks on the first read.",
+  "author": {
+    "name": "Yashpal Yadav"
+  },
+  "license": "MIT",
+  "keywords": ["output-style", "behavior", "communication", "intuitive", "ux"],
+  "userConfig": {
+    "reminder": {
+      "type": "boolean",
+      "title": "Per-turn reminder",
+      "description": "Add a one-line style reminder to every prompt so the style never drifts in long sessions.",
+      "default": true
+    },
+    "subagents": {
+      "type": "boolean",
+      "title": "Apply to subagents",
+      "description": "Give every subagent (Explore, Plan, general-purpose and custom agents) a compact version of the guidelines.",
+      "default": true
+    }
+  }
+}

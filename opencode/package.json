@@ -1,0 +1,29 @@
+{
+  "name": "opencode-intuitive",
+  "version": "1.0.0",
+  "description": "OpenCode plugin that makes every agent think, behave and respond intuitively.",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "files": [
+    "index.ts",
+    "README.md"
+  ],
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "intuitive",
+    "system-prompt",
+    "behavior"
+  ],
+  "author": "Yashpal Yadav",
+  "license": "MIT",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@opencode/plugin": "2.0.30",
+    "typescript": "^5.9.0"
+  }
+}

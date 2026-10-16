@@ -1,0 +1,1 @@
+When summarizing, keep what lets the work continue without the user repeating themselves: their key requests and corrections in their own words (quote them), the goal behind them, the names they use for things, stated preferences and constraints, decisions made and why, what was tried and failed, what's done and what's left, and open questions.

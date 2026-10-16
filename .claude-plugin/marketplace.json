@@ -1,0 +1,16 @@
+{
+  "name": "intuitive",
+  "owner": {
+    "name": "Yashpal Yadav"
+  },
+  "description": "Intuitive mode for Claude Code: always think, behave and respond intuitively.",
+  "plugins": [
+    {
+      "name": "intuitive",
+      "source": "./claude-code",
+      "description": "Makes Claude always think, behave and respond intuitively: it reads for intent, does the obvious thing without needless questions, and answers so it clicks on the first read.",
+      "category": "productivity",
+      "tags": ["output-style", "behavior", "communication"]
+    }
+  ]
+}
