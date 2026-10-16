@@ -15,11 +15,11 @@ The full text is in [`shared/intuitive.md`](shared/intuitive.md). Your own instr
 ### Claude Code
 
 ```sh
-claude plugin marketplace add /path/to/intuitive
+claude plugin marketplace add Yashpal-0/intuitive
 claude plugin install intuitive@intuitive
 ```
 
-You can also do this inside Claude Code: `/plugin marketplace add /path/to/intuitive`, then `/plugin install intuitive@intuitive`. If the repo is on GitHub, use `/plugin marketplace add <you>/intuitive` instead. Start a new session afterwards (or run `/reload-plugins`).
+You can also do this inside Claude Code: `/plugin marketplace add Yashpal-0/intuitive`, then `/plugin install intuitive@intuitive`. For a local clone, use its path instead of `Yashpal-0/intuitive`. Start a new session afterwards (or run `/reload-plugins`). To pick up later changes, run `claude plugin marketplace update intuitive`.
 
 Install may say "2 userConfig options not yet set". That's fine: both options default to on. To check the install, run `claude plugin list`; it should show `intuitive@intuitive` as enabled.
 
@@ -28,8 +28,9 @@ Install may say "2 userConfig options not yet set". That's fine: both options de
 Copy one file. Nothing to install.
 
 ```sh
+git clone https://github.com/Yashpal-0/intuitive
 mkdir -p ~/.config/opencode/plugins
-cp opencode/index.ts ~/.config/opencode/plugins/intuitive.ts
+cp intuitive/opencode/index.ts ~/.config/opencode/plugins/intuitive.ts
 ```
 
 - **One project only:** put it in `<project>/.opencode/plugins/intuitive.ts` instead.
