@@ -1,6 +1,6 @@
 # Intuitive
 
-A plugin for **Claude Code** and **OpenCode V2** (V1 works too) that makes the agent always think, behave and respond intuitively. It reads for the goal behind your words, does the obvious thing without needless questions, and answers so it clicks on the first read.
+A plugin for **Claude Code**, **OpenCode V2** (V1 works too) and **OMP** (Oh My Pi) that makes the agent always think, behave and respond intuitively. It reads for the goal behind your words, does the obvious thing without needless questions, and answers so it clicks on the first read.
 
 | | What changes |
 |---|---|
@@ -38,15 +38,28 @@ cp intuitive/opencode/index.ts ~/.config/opencode/plugins/intuitive.ts
 - **Check:** `opencode run --standalone --print-logs "hi" 2>&1 | grep "loading plugin"` should list `intuitive.ts`. This sends "hi" to your model. `opencode plugin list` only shows npm/git package plugins.
 - **OpenCode V1 (1.18.29 or newer):** the same file works. Copy it to `~/.config/opencode/plugin/intuitive.ts`.
 
+### OMP (Oh My Pi)
+
+```sh
+omp plugin marketplace add Yashpal-0/intuitive
+omp plugin install intuitive@intuitive
+```
+
+For a local clone, use its path instead of `Yashpal-0/intuitive`. Restart omp afterwards: it loads extensions at startup. To pick up later changes, run `omp plugin marketplace update intuitive`, then `omp plugin upgrade intuitive@intuitive`.
+
+- **Check:** `omp plugin list` should show `intuitive@intuitive`.
+- **Your working copy:** `omp plugin link <clone>/omp` installs the folder as a link, so edits apply on the next start.
+- **No plugin manager:** copy the one file to `~/.omp/agent/extensions/intuitive.ts` (all projects) or `<project>/.omp/extensions/intuitive.ts` (one project). A copied file always uses the default settings.
+
 ## How it stays "always on"
 
-| | Claude Code | OpenCode |
-|---|---|---|
-| Main conversation | A plugin output style with `force-for-plugin`, sent with every request | The `context` hook appends it to the system prompt of every agent request |
-| Subagents | `SubagentStart` hook adds a compact version | Child sessions get the compact version |
-| Long sessions | A one-line reminder on every prompt | The system prompt is rebuilt on every request |
-| After compaction | The style is re-sent automatically | The compaction hook asks the summary to keep your goals, preferences and decisions |
-| Title generation | Untouched | Untouched |
+| | Claude Code | OpenCode | OMP |
+|---|---|---|---|
+| Main conversation | A plugin output style with `force-for-plugin`, sent with every request | The `context` hook appends it to the system prompt of every agent request | The `before_agent_start` hook appends it to the system prompt of every prompt |
+| Subagents | `SubagentStart` hook adds a compact version | Child sessions get the compact version | Subagent sessions (`task`, eval `agent()`, `/tan`) get the compact version |
+| Long sessions | A one-line reminder on every prompt | The system prompt is rebuilt on every request | The system prompt is rebuilt on every prompt |
+| After compaction | The style is re-sent automatically | The compaction hook asks the summary to keep your goals, preferences and decisions | The `session.compacting` hook does the same |
+| Title generation | Untouched | Untouched | Nothing of its own: the default `fork` title turn reuses the main prompt and its cache |
 
 ## Configure
 
@@ -85,6 +98,25 @@ Options apply when you load the plugin folder through `plugins` in `opencode.jso
 
 To turn it off, delete the file or add `"-intuitive"` to `plugins`.
 
+**OMP**
+
+Settings apply to plugin installs (marketplace or `omp plugin link`). Change them from the shell or under `/plugins` in omp, then restart omp:
+
+```sh
+omp plugin config set intuitive subagents full
+omp plugin config set intuitive exclude scout,reviewer
+omp plugin config list intuitive
+```
+
+| Setting | Default | Meaning |
+|---|---|---|
+| `subagents` | `compact` | What subagent sessions get: `compact`, `full` or `off` |
+| `compaction` | `true` | Steer compaction summaries to keep the user's goals, preferences and decisions |
+| `exclude` | — | Comma-separated agent names to leave untouched, e.g. `scout,reviewer`. The top-level session is `main` |
+| `file` | — | Your own guidelines file. It replaces the built-in text (relative paths resolve from the project) |
+
+OMP keeps only one extension's compaction note, so another plugin that adds one can replace this one. To turn the plugin off, run `omp plugin disable intuitive@intuitive`.
+
 ## Customize the style
 
 All the text lives in `shared/`:
@@ -96,10 +128,10 @@ All the text lives in `shared/`:
 | `reminder.md` | Per-prompt nudge |
 | `compaction.md` | Note added to compaction requests |
 
-Edit those files, then regenerate both plugins:
+Edit those files, then regenerate the plugins:
 
 ```sh
-node scripts/build.mjs          # rewrites the Claude Code style + hooks and the text block in opencode/index.ts
+node scripts/build.mjs          # rewrites the Claude Code style + hooks and the text blocks in opencode/index.ts and omp/index.ts
 node scripts/build.mjs --check  # CI: fails if a generated file is stale
 ```
 
@@ -107,8 +139,9 @@ node scripts/build.mjs --check  # CI: fails if a generated file is stale
 
 ```sh
 claude plugin validate . --strict   # marketplace + plugin manifests
-bun test tests/                     # OpenCode plugin, V2 and V1 paths
-cd opencode && npm i && npm run typecheck
+bun test tests/                     # OpenCode plugin (V2 and V1 paths) and OMP extension
+(cd opencode && npm i && npm run typecheck)
+(cd omp && npm i && npm run typecheck)
 ```
 
 This was tested end to end against a mock model server with:
@@ -116,6 +149,7 @@ This was tested end to end against a mock model server with:
 - Claude Code 2.1.301
 - OpenCode 2.0.30
 - OpenCode 1.19.2
+- OMP 18.13.3
 
 In every case, the guidelines reached the main agent, the subagents and the post-compaction requests as described above.
 
@@ -123,6 +157,7 @@ In every case, the guidelines reached the main agent, the subagents and the post
 
 ```
 .claude-plugin/marketplace.json   Claude Code marketplace (this folder is the marketplace)
+.omp-plugin/marketplace.json      OMP marketplace (OMP reads this one, Claude Code the one above)
 claude-code/                      Claude Code plugin
   .claude-plugin/plugin.json
   output-styles/intuitive.md      generated: forced output style
@@ -130,9 +165,11 @@ claude-code/                      Claude Code plugin
   hooks/*.sh                      generated: hook scripts (bash, no dependencies)
 opencode/                         OpenCode plugin (single file + package.json for npm/git installs)
   index.ts                        V2 setup() + V1 server(), text block generated
+omp/                              OMP plugin (single file + package.json declaring the extension and its settings)
+  index.ts                        before_agent_start + session.compacting hooks, text block generated
 shared/                           the text: edit here
 scripts/build.mjs                 regenerates the plugin files from shared/
-tests/opencode.test.ts            bun unit tests
+tests/                            bun unit tests for the OpenCode and OMP plugins
 ```
 
 MIT licensed.

@@ -1,0 +1,57 @@
+{
+  "name": "intuitive",
+  "version": "1.0.0",
+  "description": "OMP (Oh My Pi) plugin that makes every agent think, behave and respond intuitively.",
+  "type": "module",
+  "files": [
+    "index.ts",
+    "README.md"
+  ],
+  "keywords": [
+    "omp",
+    "omp-plugin",
+    "oh-my-pi",
+    "intuitive",
+    "system-prompt",
+    "behavior"
+  ],
+  "author": "Yashpal Yadav",
+  "license": "MIT",
+  "omp": {
+    "extensions": [
+      "./index.ts"
+    ],
+    "settings": {
+      "subagents": {
+        "type": "enum",
+        "values": [
+          "compact",
+          "full",
+          "off"
+        ],
+        "default": "compact",
+        "description": "What subagent sessions get: the compact guidelines, the full ones, or nothing"
+      },
+      "compaction": {
+        "type": "boolean",
+        "default": true,
+        "description": "Ask compaction summaries to keep the user's goals, preferences and decisions"
+      },
+      "exclude": {
+        "type": "string",
+        "description": "Comma-separated agent names to leave untouched, e.g. scout,reviewer (main is the top-level session)"
+      },
+      "file": {
+        "type": "string",
+        "description": "Your own guidelines file, replacing the built-in text (relative paths resolve from the project)"
+      }
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}

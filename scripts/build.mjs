@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Builds both plugins from the single source of truth in shared/*.md.
+// Builds every plugin from the single source of truth in shared/*.md.
 //
 //   node scripts/build.mjs           regenerate the derived files
 //   node scripts/build.mjs --check   exit 1 if any derived file is out of date (for CI)
@@ -8,7 +8,8 @@
 //   claude-code/output-styles/intuitive.md      main guidelines (forced plugin output style)
 //   claude-code/hooks/subagent-start.sh         compact guidelines for every subagent
 //   claude-code/hooks/user-prompt-submit.sh     one-line per-prompt reminder
-//   opencode/index.ts                           the <generated> block with all three texts
+//   opencode/index.ts                           the <generated> block with the main, subagent and compaction texts
+//   omp/index.ts                                the same <generated> block
 
 import { readFileSync, writeFileSync, chmodSync, existsSync } from "node:fs"
 import { dirname, join, relative } from "node:path"
@@ -53,19 +54,21 @@ JSON
 // Text inside a TS template literal: escape backslashes, backticks and \${.
 const literal = (text) => "`" + text.replace(/\\/g, "\\\\").replace(/`/g, "\\`").replace(/\$\{/g, "\\${") + "`"
 
-const indexPath = "opencode/index.ts"
-const index = readFileSync(join(root, indexPath), "utf8")
+// The <generated> block of a single-file plugin: the three texts as TS constants.
 const block = /(\/\/ <generated>[^\n]*\n)[\s\S]*?(\/\/ <\/generated>)/
-if (!block.test(index)) throw new Error(`${indexPath}: <generated> markers not found`)
-const generatedIndex = index.replace(
-  block,
-  (_, open, close) =>
-    open +
-    `const GUIDELINES = ${literal(guidelines)}\n\n` +
-    `const SUBAGENT_GUIDELINES = ${literal(subagent)}\n\n` +
-    `const COMPACTION_GUIDANCE = ${literal(compaction)}\n` +
-    close,
-)
+const withTexts = (file) => {
+  const source = readFileSync(join(root, file), "utf8")
+  if (!block.test(source)) throw new Error(`${file}: <generated> markers not found`)
+  return source.replace(
+    block,
+    (_, open, close) =>
+      open +
+      `const GUIDELINES = ${literal(guidelines)}\n\n` +
+      `const SUBAGENT_GUIDELINES = ${literal(subagent)}\n\n` +
+      `const COMPACTION_GUIDANCE = ${literal(compaction)}\n` +
+      close,
+  )
+}
 
 const outputs = [
   ["claude-code/output-styles/intuitive.md", outputStyle],
@@ -91,7 +94,8 @@ const outputs = [
     }),
     true,
   ],
-  [indexPath, generatedIndex],
+  ["opencode/index.ts", withTexts("opencode/index.ts")],
+  ["omp/index.ts", withTexts("omp/index.ts")],
 ]
 
 let stale = 0
